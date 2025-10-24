@@ -1,2 +1,9 @@
 # xuxw.github.io
-A personal blog
+
+静态个人主页，将通过 GitHub Pages 部署到 https://xuxw.github.io。
+
+## 自定义内容
+- 在 `index.html` 的“关于我”部分替换为你的真实简介。
+- 在“项目”部分更新项目名称、描述和 GitHub 链接。
+- 在“联系我”部分填写常用邮箱并根据需要调整社交链接。
+- 若需增加更多项目或信息，可复制现有卡片结构或新增段落。
