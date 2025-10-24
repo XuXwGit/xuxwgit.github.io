@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alex Xu · Frontend Developer</title>
+  <style>
+    :root {
+      --bg-color: #0f0f0f;
+      --text-primary: #f5f5f5;
+      --text-secondary: #b0b0b0;
+      --accent: #00f0ff;
+      --accent-alt: #00d4ff;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --border-glow: rgba(0, 240, 255, 0.35);
+      --max-width: 1200px;
+      --transition: 0.3s ease;
+      --radius: 16px;
+      --nav-height: 72px;
+      scroll-behavior: smooth;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--nav-height);
+      background: rgba(15, 15, 15, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+    }
+
+    .logo {
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo span {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-alt));
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    nav a {
+      position: relative;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      transition: color var(--transition);
+    }
+
+    nav a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -0.4rem;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-alt));
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform var(--transition);
+    }
+
+    nav a:hover,
+    nav a:focus {
+      color: var(--text-primary);
+    }
+
+    nav a:hover::after,
+    nav a:focus::after {
+      transform: scaleX(1);
+    }
+
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .github-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    .mobile-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: transparent;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+
+    .mobile-toggle:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    main {
+      padding-top: calc(var(--nav-height) + 3rem);
+    }
+
+    section {
+      padding: 6rem 1.5rem;
+    }
+
+    .section-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    h1, h2, h3 {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .hero {
+      display: grid;
+      gap: 1.5rem;
+      align-items: center;
+      min-height: calc(100vh - var(--nav-height) - 3rem);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      color: var(--text-primary);
+    }
+
+    .typing {
+      position: relative;
+      display: inline-block;
+    }
+
+    .typing::after {
+      content: "";
+      position: absolute;
+      right: -0.2rem;
+      top: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent);
+      animation: blink 1s steps(1) infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    .hero p {
+      max-width: 560px;
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.9rem 1.8rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-alt));
+      color: #031315;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 240, 255, 0.35);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--accent);
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+      color: var(--text-secondary);
+      max-width: 600px;
+    }
+
+    .about-grid {
+      display: grid;
+      gap: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      margin-top: 2rem;
+    }
+
+    .about-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius);
+      padding: 2rem;
+      backdrop-filter: blur(6px);
+      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .about-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--border-glow);
+      box-shadow: 0 20px 40px rgba(0, 240, 255, 0.08);
+    }
+
+    .skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .project-card {
+      position: relative;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      min-height: 280px;
+      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .project-card:hover {
+      transform: translateY(-10px);
+      border-color: var(--border-glow);
+      box-shadow: 0 30px 60px rgba(0, 240, 255, 0.12);
+    }
+
+    .project-card h3 {
+      font-size: 1.35rem;
+    }
+
+    .project-card p {
+      color: var(--text-secondary);
+    }
+
+    .project-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .project-actions {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .icon-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .icon-link svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--text-primary);
+    }
+
+    .icon-link:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    .contact {
+      text-align: center;
+    }
+
+    .contact-list {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .contact-list a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--accent);
+      transition: color var(--transition), transform var(--transition);
+    }
+
+    .contact-list a:hover {
+      color: var(--accent-alt);
+      transform: translateY(-2px);
+    }
+
+    footer {
+      padding: 2rem 1.5rem 3rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(15, 15, 15, 0.9);
+    }
+
+    .footer-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      color: var(--text-secondary);
+    }
+
+    .back-to-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--accent);
+      cursor: pointer;
+      transition: color var(--transition), transform var(--transition);
+    }
+
+    .back-to-top:hover {
+      color: var(--accent-alt);
+      transform: translateY(-2px);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Mobile styles */
+    @media (max-width: 768px) {
+      header {
+        height: auto;
+      }
+
+      .nav-container {
+        flex-wrap: wrap;
+        padding: 1rem 1.25rem;
+      }
+
+      nav {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.2rem;
+        margin-top: 1rem;
+        display: none;
+      }
+
+      nav.open {
+        display: flex;
+      }
+
+      .github-link {
+        display: none;
+      }
+
+      .mobile-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .mobile-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      main {
+        padding-top: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <div class="logo" aria-label="Alex Xu home">
+        <span aria-hidden="true"></span>
+        ALEX XU
+      </div>
+      <div class="mobile-actions">
+        <a class="github-link" href="https://github.com/xuxwgit" target="_blank" rel="noopener" aria-label="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden="true">
+            <path d="M12 0a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.05-3.34.73-4.04-1.61-4.04-1.61-.55-1.4-1.34-1.77-1.34-1.77-1.09-.75.08-.74.08-.74 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.78.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.62-5.48 5.92.43.37.81 1.1.81 2.22 0 1.6-.02 2.88-.02 3.28 0 .32.22.7.83.58A12 12 0 0 0 12 0Z" />
+          </svg>
+        </a>
+        <button class="mobile-toggle" aria-expanded="false" aria-controls="primary-navigation" aria-label="Toggle navigation">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+      <nav id="primary-navigation">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a class="github-link desktop" href="https://github.com/xuxwgit" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden="true">
+          <path d="M12 0a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.05-3.34.73-4.04-1.61-4.04-1.61-.55-1.4-1.34-1.77-1.34-1.77-1.09-.75.08-.74.08-.74 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.78.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.62-5.48 5.92.43.37.81 1.1.81 2.22 0 1.6-.02 2.88-.02 3.28 0 .32.22.7.83.58A12 12 0 0 0 12 0Z" />
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="section hero">
+      <div class="section-inner">
+        <div class="reveal">
+          <h1 class="typing" data-text="Hi, I'm Alex 👋"></h1>
+        </div>
+        <div class="reveal" style="transition-delay: 0.1s;">
+          <h2 class="section-subtitle">Frontend Developer &amp; Open Source Enthusiast crafting human-centered digital experiences.</h2>
+        </div>
+        <div class="reveal" style="transition-delay: 0.2s;">
+          <p>I design and build responsive, accessible interfaces with a focus on performance, delightful micro-interactions, and maintainable code. I thrive on collaborating with teams to turn ideas into pixel-perfect products.</p>
+        </div>
+        <div class="reveal" style="transition-delay: 0.3s;">
+          <a class="btn" href="#projects">View Projects
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="M5 12h12.17l-4.58-4.59L13 6l7 7-7 7-1.41-1.41L17.17 13H5z" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section">
+      <div class="section-inner reveal">
+        <span class="pill">About</span>
+        <h2 class="section-title">Designing with empathy. Building with precision.</h2>
+        <p class="section-subtitle">I'm Alex Xu, a frontend engineer and UI/UX designer with a passion for crafting modern, performant interfaces. I believe in clean aesthetics, clear hierarchies, and purposeful motion.</p>
+        <div class="about-grid">
+          <article class="about-card">
+            <h3>Who I Am</h3>
+            <p>I combine product thinking with technical expertise to deliver experiences that feel effortless. From concept to launch, I'm obsessed with the details that make digital products a joy to use.</p>
+          </article>
+          <article class="about-card">
+            <h3>What I Do</h3>
+            <p>I translate user problems into simple, elegant solutions. My work spans interaction design, design systems, and high-quality implementation with a focus on accessibility and inclusive design.</p>
+          </article>
+          <article class="about-card">
+            <h3>Skills &amp; Tools</h3>
+            <div class="skills">
+              <span class="pill">HTML</span>
+              <span class="pill">CSS</span>
+              <span class="pill">JavaScript</span>
+              <span class="pill">Git</span>
+              <span class="pill">GitHub Actions</span>
+              <span class="pill">UI/UX</span>
+              <span class="pill">Design Systems</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="section">
+      <div class="section-inner reveal">
+        <span class="pill">Selected Work</span>
+        <h2 class="section-title">Projects that balance form and function.</h2>
+        <p class="section-subtitle">Each project blends thoughtful design with robust engineering to deliver intuitive, performant experiences.</p>
+        <div class="projects-grid">
+          <article class="project-card">
+            <div>
+              <h3>Neon Portfolio</h3>
+              <p>A lightweight personal site template featuring immersive hero transitions and dynamic project showcases built with pure HTML/CSS/JS.</p>
+            </div>
+            <div class="project-meta">
+              <span class="pill">HTML</span>
+              <span class="pill">CSS Grid</span>
+              <span class="pill">JavaScript</span>
+            </div>
+            <div class="project-actions">
+              <a class="icon-link" href="https://github.com/xuxwgit" target="_blank" rel="noopener" aria-label="View Neon Portfolio on GitHub">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 0a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.05-3.34.73-4.04-1.61-4.04-1.61-.55-1.4-1.34-1.77-1.34-1.77-1.09-.75.08-.74.08-.74 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.78.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.62-5.48 5.92.43.37.81 1.1.81 2.22 0 1.6-.02 2.88-.02 3.28 0 .32.22.7.83.58A12 12 0 0 0 12 0Z" />
+                </svg>
+              </a>
+            </div>
+          </article>
+
+          <article class="project-card">
+            <div>
+              <h3>Pulse Dashboard</h3>
+              <p>An interactive analytics dashboard featuring responsive charts, theme toggles, and smooth motion, crafted for rapid performance insights.</p>
+            </div>
+            <div class="project-meta">
+              <span class="pill">HTML</span>
+              <span class="pill">CSS Flexbox</span>
+              <span class="pill">JavaScript</span>
+            </div>
+            <div class="project-actions">
+              <a class="icon-link" href="https://github.com/xuxwgit" target="_blank" rel="noopener" aria-label="View Pulse Dashboard on GitHub">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 0a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.05-3.34.73-4.04-1.61-4.04-1.61-.55-1.4-1.34-1.77-1.34-1.77-1.09-.75.08-.74.08-.74 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.78.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.62-5.48 5.92.43.37.81 1.1.81 2.22 0 1.6-.02 2.88-.02 3.28 0 .32.22.7.83.58A12 12 0 0 0 12 0Z" />
+                </svg>
+              </a>
+            </div>
+          </article>
+
+          <article class="project-card">
+            <div>
+              <h3>Focus Notes</h3>
+              <p>A minimal note-taking web app with offline-first architecture, keyboard shortcuts, and frictionless tagging to keep ideas organized.</p>
+            </div>
+            <div class="project-meta">
+              <span class="pill">HTML</span>
+              <span class="pill">CSS Modules</span>
+              <span class="pill">JavaScript</span>
+            </div>
+            <div class="project-actions">
+              <a class="icon-link" href="https://github.com/xuxwgit" target="_blank" rel="noopener" aria-label="View Focus Notes on GitHub">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 0a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.05-3.34.73-4.04-1.61-4.04-1.61-.55-1.4-1.34-1.77-1.34-1.77-1.09-.75.08-.74.08-.74 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.78.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.62-5.48 5.92.43.37.81 1.1.81 2.22 0 1.6-.02 2.88-.02 3.28 0 .32.22.7.83.58A12 12 0 0 0 12 0Z" />
+                </svg>
+              </a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section contact">
+      <div class="section-inner reveal">
+        <span class="pill">Contact</span>
+        <h2 class="section-title">Let’s build something remarkable together.</h2>
+        <p class="section-subtitle">Whether you want to collaborate or just say hi, my inbox is always open.</p>
+        <div class="contact-list">
+          <a href="mailto:hello@alexxu.dev" aria-label="Email Alex">hello@alexxu.dev</a>
+          <a href="https://github.com/xuxwgit" target="_blank" rel="noopener" aria-label="GitHub Profile">github.com/xuxwgit</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <small>© <span id="year"></span> Alex Xu. Crafted for the web.</small>
+      <button class="back-to-top" type="button" aria-label="Back to top">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+          <path d="M12 4l7 7h-4v9h-6v-9H5l7-7z" />
+        </svg>
+        Back to top
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    // Typing effect configuration
+    const typingElement = document.querySelector('.typing');
+    const typingText = typingElement.dataset.text;
+    let charIndex = 0;
+
+    function type() {
+      if (charIndex <= typingText.length) {
+        typingElement.textContent = typingText.slice(0, charIndex);
+        charIndex++;
+        setTimeout(type, 90);
+      }
+    }
+
+    // Reveal on scroll effect
+    const revealElements = document.querySelectorAll('.reveal');
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.2,
+      }
+    );
+
+    revealElements.forEach((el) => observer.observe(el));
+
+    // Smooth scroll for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener('click', (event) => {
+        const targetId = anchor.getAttribute('href');
+        if (targetId.length > 1) {
+          event.preventDefault();
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+          }
+          if (window.innerWidth <= 768) {
+            primaryNav.classList.remove('open');
+            mobileToggle.setAttribute('aria-expanded', 'false');
+          }
+        }
+      });
+    });
+
+    // Back to top button functionality
+    const backToTopButton = document.querySelector('.back-to-top');
+    backToTopButton.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Update footer year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Mobile navigation toggle
+    const mobileToggle = document.querySelector('.mobile-toggle');
+    const primaryNav = document.getElementById('primary-navigation');
+
+    mobileToggle.addEventListener('click', () => {
+      const isOpen = primaryNav.classList.toggle('open');
+      mobileToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    // Close mobile nav on outside click
+    document.addEventListener('click', (event) => {
+      if (window.innerWidth <= 768) {
+        if (!primaryNav.contains(event.target) && !mobileToggle.contains(event.target)) {
+          primaryNav.classList.remove('open');
+          mobileToggle.setAttribute('aria-expanded', 'false');
+        }
+      }
+    });
+
+    // Initiate typing after DOM loads
+    window.addEventListener('DOMContentLoaded', () => {
+      type();
+    });
+  </script>
+</body>
+</html>
