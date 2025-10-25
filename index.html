@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>线性规划几何求解演示</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: "Inter", "Segoe UI", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top left, #eef2ff, #e0e7ff 45%, #f8fafc);
+      color: #0f172a;
+    }
+    header {
+      padding: 32px 48px 24px;
+      background: linear-gradient(135deg, rgba(59,130,246,0.95), rgba(99,102,241,0.92));
+      color: white;
+      box-shadow: 0 20px 50px rgba(79,70,229,0.35);
+      border-bottom-left-radius: 32px;
+      border-bottom-right-radius: 32px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 32px;
+      letter-spacing: 0.02em;
+    }
+    header p {
+      margin: 12px 0 0;
+      max-width: 720px;
+      line-height: 1.6;
+      opacity: 0.92;
+    }
+    main {
+      padding: 32px clamp(20px, 6vw, 64px) 56px;
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+    }
+    .panel {
+      background: white;
+      border-radius: 26px;
+      box-shadow: 0 24px 60px rgba(15,23,42,0.16);
+      padding: 28px;
+    }
+    .left-panel {
+      width: min(420px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: sticky;
+      top: 32px;
+      align-self: flex-start;
+      z-index: 2;
+    }
+    .section-title {
+      font-size: 18px;
+      margin: 0 0 10px;
+      font-weight: 600;
+      color: #1e1b4b;
+    }
+    .objective-toggle {
+      display: inline-flex;
+      background: #eef2ff;
+      border-radius: 999px;
+      padding: 4px;
+      gap: 4px;
+    }
+    .objective-toggle button {
+      flex: 1;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: #4338ca;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .objective-toggle button.active {
+      background: white;
+      color: #312e81;
+      box-shadow: 0 10px 20px rgba(99,102,241,0.18);
+    }
+    .section-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(238,242,255,0.7));
+      border-radius: 20px;
+      padding: 18px 20px;
+      box-shadow: inset 0 0 0 1px rgba(99,102,241,0.08);
+    }
+    .variable-list, .constraint-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .variable-card, .constraint-card {
+      background: white;
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: grid;
+      gap: 8px;
+      border: 1px solid rgba(99,102,241,0.1);
+      box-shadow: 0 10px 25px rgba(15,23,42,0.08);
+    }
+    .variable-card {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: center;
+    }
+    .variable-card .actions {
+      grid-column: span 2;
+      text-align: right;
+    }
+    .constraint-card {
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      align-items: end;
+      position: relative;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+      color: #475569;
+    }
+    input[type="number"], input[type="text"], select {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #f1f5f9;
+      font-size: 15px;
+      color: inherit;
+      box-shadow: inset 0 2px 6px rgba(148,163,184,0.18);
+    }
+    input[type="text"] {
+      text-transform: none;
+    }
+    select {
+      cursor: pointer;
+    }
+    .pill-button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .pill-button.primary {
+      background: linear-gradient(120deg, #4f46e5, #6366f1);
+      color: white;
+      box-shadow: 0 16px 32px rgba(99,102,241,0.25);
+    }
+    .pill-button.secondary {
+      background: white;
+      color: #312e81;
+      border: 1px solid rgba(99,102,241,0.16);
+      box-shadow: 0 10px 18px rgba(148,163,184,0.22);
+    }
+    .pill-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .pill-button:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 28px rgba(79,70,229,0.3);
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      border: none;
+      border-radius: 18px;
+      padding: 16px 18px;
+      background: #0f172a;
+      color: #e0e7ff;
+      font-size: 14px;
+      line-height: 1.7;
+      box-shadow: inset 0 0 0 1px rgba(148,163,184,0.3);
+    }
+    textarea:focus {
+      outline: 2px solid rgba(99,102,241,0.6);
+    }
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .visual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .visual-card {
+      background: white;
+      border-radius: 22px;
+      padding: 18px 20px 20px;
+      box-shadow: 0 18px 40px rgba(15,23,42,0.14);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .visual-card h3 {
+      margin: 0;
+      font-size: 17px;
+      color: #312e81;
+    }
+    canvas.visual {
+      width: 100%;
+      height: 320px;
+      border-radius: 16px;
+      background: #020617;
+      box-shadow: inset 0 0 0 1px rgba(148,163,184,0.2);
+    }
+    #three-view {
+      width: 100%;
+      height: 360px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #020617;
+      box-shadow: inset 0 0 0 1px rgba(148,163,184,0.18);
+    }
+    .steps-wrapper {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .steps-card {
+      background: linear-gradient(135deg, rgba(248,250,255,0.95), rgba(224,231,255,0.75));
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: inset 0 0 0 1px rgba(129,140,248,0.25);
+    }
+    .steps-card h4 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      color: #3730a3;
+    }
+    .steps-card ul {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+      color: #334155;
+    }
+    .steps-card li::marker {
+      color: #4f46e5;
+    }
+    #error {
+      color: #dc2626;
+      min-height: 24px;
+      font-weight: 600;
+    }
+    @media (max-width: 1200px) {
+      main {
+        flex-direction: column;
+      }
+      .left-panel {
+        position: relative;
+        top: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>线性规划几何求解演示器</h1>
+    <p>配置最多三个决策变量与线性约束，比较单纯形法与内点法在二维及三维空间中的几何演化过程，帮助理解线性优化模型的求解路径。</p>
+  </header>
+  <main>
+    <aside class="panel left-panel">
+      <div class="section-card">
+        <h2 class="section-title">目标类型</h2>
+        <div class="objective-toggle">
+          <button id="maximize-btn" class="active">最大化</button>
+          <button id="minimize-btn">最小化</button>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <h2 class="section-title" style="margin:0;">变量定义</h2>
+          <button id="add-variable" class="pill-button secondary">+ 添加变量</button>
+        </div>
+        <div id="variable-list" class="variable-list"></div>
+      </div>
+      <div class="section-card">
+        <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <h2 class="section-title" style="margin:0;">约束列表</h2>
+          <span style="font-size:12px;color:#6366f1;">≤ / ≥ / = 支持</span>
+        </div>
+        <div id="constraint-list" class="constraint-list"></div>
+        <button id="add-constraint" class="pill-button secondary" style="margin-top:12px;">+ 添加约束</button>
+      </div>
+      <div class="section-card">
+        <div class="button-row" style="margin-bottom:12px;">
+          <button id="solve-btn" class="pill-button primary">开始可视化</button>
+          <button id="load-example" class="pill-button secondary">加载示例</button>
+        </div>
+        <h2 class="section-title" style="margin-top:8px;">线性规划模型</h2>
+        <textarea id="lp-input"></textarea>
+        <div id="error"></div>
+      </div>
+    </aside>
+    <section class="right-panel">
+      <div class="visual-grid">
+        <div class="visual-card" id="two-d-card">
+          <h3>二维视图（单纯形 / 内点）</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px,1fr));gap:12px;">
+            <canvas id="simplex-canvas" class="visual" width="480" height="320"></canvas>
+            <canvas id="interior-canvas" class="visual" width="480" height="320"></canvas>
+          </div>
+        </div>
+        <div class="visual-card" id="three-d-card" style="display:none;">
+          <h3>三维可行域与路径</h3>
+          <div id="three-view"></div>
+        </div>
+      </div>
+      <div class="steps-wrapper">
+        <div class="steps-card">
+          <h4>单纯形法步骤</h4>
+          <ul id="simplex-steps"></ul>
+        </div>
+        <div class="steps-card">
+          <h4>内点法步骤</h4>
+          <ul id="interior-steps"></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
+    import { OrbitControls } from 'https://unpkg.com/three@0.158.0/examples/jsm/controls/OrbitControls.js';
+    import { ConvexGeometry } from 'https://unpkg.com/three@0.158.0/examples/jsm/geometries/ConvexGeometry.js';
+
+    const maximizeBtn = document.getElementById('maximize-btn');
+    const minimizeBtn = document.getElementById('minimize-btn');
+    const addVariableBtn = document.getElementById('add-variable');
+    const addConstraintBtn = document.getElementById('add-constraint');
+    const solveBtn = document.getElementById('solve-btn');
+    const loadExampleBtn = document.getElementById('load-example');
+    const variableList = document.getElementById('variable-list');
+    const constraintList = document.getElementById('constraint-list');
+    const inputArea = document.getElementById('lp-input');
+    const errorBox = document.getElementById('error');
+    const simplexCanvas = document.getElementById('simplex-canvas');
+    const interiorCanvas = document.getElementById('interior-canvas');
+    const simplexStepsEl = document.getElementById('simplex-steps');
+    const interiorStepsEl = document.getElementById('interior-steps');
+    const threeCard = document.getElementById('three-d-card');
+    const twoDCard = document.getElementById('two-d-card');
+    const threeContainer = document.getElementById('three-view');
+
+    const EPS = 1e-7;
+
+    const defaultState = {
+      sense: 'max',
+      variables: [
+        { id: 'var-1', name: 'x1', objective: 3 },
+        { id: 'var-2', name: 'x2', objective: 2 }
+      ],
+      constraints: [
+        { id: 'con-1', coeffs: [2, 1], operator: '<=', rhs: 18 },
+        { id: 'con-2', coeffs: [2, 3], operator: '<=', rhs: 42 },
+        { id: 'con-3', coeffs: [3, 1], operator: '<=', rhs: 24 }
+      ]
+    };
+
+    const exampleState = {
+      sense: 'max',
+      variables: [
+        { id: 'var-1', name: 'x1', objective: 6 },
+        { id: 'var-2', name: 'x2', objective: 4 },
+        { id: 'var-3', name: 'x3', objective: 5 }
+      ],
+      constraints: [
+        { id: 'con-1', coeffs: [1, 1, 1], operator: '<=', rhs: 30 },
+        { id: 'con-2', coeffs: [2, 1, 0], operator: '<=', rhs: 40 },
+        { id: 'con-3', coeffs: [0, 1, 2], operator: '<=', rhs: 36 },
+        { id: 'con-4', coeffs: [1, 0, 1], operator: '<=', rhs: 28 }
+      ]
+    };
+
+    let state = cloneState(defaultState);
+
+    function cloneState(src) {
+      return {
+        sense: src.sense,
+        variables: src.variables.map(v => ({ ...v })),
+        constraints: src.constraints.map(c => ({ ...c, coeffs: [...c.coeffs] }))
+      };
+    }
+
+    function ensureObjectiveToggle() {
+      maximizeBtn.classList.toggle('active', state.sense === 'max');
+      minimizeBtn.classList.toggle('active', state.sense === 'min');
+    }
+
+    function renderVariables() {
+      addVariableBtn.disabled = state.variables.length >= 3;
+      variableList.innerHTML = '';
+      state.variables.forEach((variable, index) => {
+        const card = document.createElement('div');
+        card.className = 'variable-card';
+        card.innerHTML = `
+          <label>变量名称
+            <input type="text" value="${variable.name}" data-type="name" data-index="${index}">
+          </label>
+          <label>目标系数
+            <input type="number" step="0.01" value="${variable.objective}" data-type="objective" data-index="${index}">
+          </label>
+          <div class="actions">
+            <button class="pill-button secondary" data-action="remove" data-index="${index}" ${state.variables.length <= 2 ? 'disabled' : ''}>删除变量</button>
+          </div>
+        `;
+        variableList.appendChild(card);
+      });
+    }
+
+    function renderConstraints() {
+      constraintList.innerHTML = '';
+      state.constraints.forEach((constraint, index) => {
+        const card = document.createElement('div');
+        card.className = 'constraint-card';
+        const coeffInputs = state.variables.map((variable, vIdx) => `
+          <label>${variable.name} 系数
+            <input type="number" step="0.01" value="${constraint.coeffs[vIdx] ?? 0}" data-index="${index}" data-var="${vIdx}" data-field="coeff">
+          </label>
+        `).join('');
+        card.innerHTML = `
+          ${coeffInputs}
+          <label>关系
+            <select data-index="${index}" data-field="operator">
+              <option value="<=" ${constraint.operator === '<=' ? 'selected' : ''}>≤</option>
+              <option value=">=" ${constraint.operator === '>=' ? 'selected' : ''}>≥</option>
+              <option value="=" ${constraint.operator === '=' ? 'selected' : ''}>=</option>
+            </select>
+          </label>
+          <label>右端常数
+            <input type="number" step="0.01" value="${constraint.rhs}" data-index="${index}" data-field="rhs">
+          </label>
+          <button class="pill-button secondary" data-action="remove-constraint" data-index="${index}" style="position:absolute;top:12px;right:12px;padding:6px 12px;font-size:12px;">删除</button>
+        `;
+        constraintList.appendChild(card);
+      });
+    }
+
+    function updateModelText() {
+      const senseLabel = state.sense === 'max' ? 'maximize' : 'minimize';
+      const objectiveExpr = state.variables
+        .map(v => formatTerm(v.objective, v.name))
+        .filter(Boolean)
+        .join(' + ')
+        .replace(/\+ -/g, '- ');
+      const lines = [`${senseLabel}: ${objectiveExpr || '0'}`, 'subject to:'];
+      state.constraints.forEach(constraint => {
+        const left = state.variables
+          .map((v, idx) => formatTerm(constraint.coeffs[idx] ?? 0, v.name))
+          .filter(Boolean)
+          .join(' + ')
+          .replace(/\+ -/g, '- ');
+        lines.push(`  ${left || '0'} ${constraint.operator} ${constraint.rhs}`);
+      });
+      state.variables.forEach(v => {
+        lines.push(`  ${v.name} >= 0`);
+      });
+      inputArea.value = lines.join('\n');
+    }
+
+    function formatTerm(coef, name) {
+      const num = Number(coef);
+      if (Math.abs(num) < EPS) return '';
+      if (Math.abs(num - 1) < EPS) return `${name}`;
+      if (Math.abs(num + 1) < EPS) return `-${name}`;
+      return `${num}${name}`;
+    }
+
+    function handleVariableChange(event) {
+      const target = event.target;
+      if (!target.dataset || target.dataset.index === undefined) return;
+      const index = Number(target.dataset.index);
+      if (target.dataset.type === 'name') {
+        const newName = target.value.trim() || `x${index + 1}`;
+        state.variables[index].name = newName;
+      } else if (target.dataset.type === 'objective') {
+        state.variables[index].objective = parseFloat(target.value) || 0;
+      }
+      updateModelText();
+      renderConstraints();
+    }
+
+    function handleConstraintInput(event) {
+      const target = event.target;
+      if (!target.dataset || target.dataset.index === undefined) return;
+      const index = Number(target.dataset.index);
+      if (target.dataset.action === 'remove-constraint') {
+        state.constraints.splice(index, 1);
+        renderConstraints();
+        updateModelText();
+        return;
+      }
+      const field = target.dataset.field;
+      if (field === 'coeff') {
+        const varIdx = Number(target.dataset.var);
+        const value = parseFloat(target.value) || 0;
+        state.constraints[index].coeffs[varIdx] = value;
+      } else if (field === 'rhs') {
+        state.constraints[index].rhs = parseFloat(target.value) || 0;
+      } else if (field === 'operator') {
+        state.constraints[index].operator = target.value;
+      }
+      updateModelText();
+    }
+
+    function removeVariable(index) {
+      if (state.variables.length <= 2) return;
+      state.variables.splice(index, 1);
+      state.constraints.forEach(c => {
+        c.coeffs.splice(index, 1);
+      });
+      renderVariables();
+      renderConstraints();
+      updateModelText();
+    }
+
+    maximizeBtn.addEventListener('click', () => {
+      state.sense = 'max';
+      ensureObjectiveToggle();
+      updateModelText();
+    });
+    minimizeBtn.addEventListener('click', () => {
+      state.sense = 'min';
+      ensureObjectiveToggle();
+      updateModelText();
+    });
+
+    addVariableBtn.addEventListener('click', () => {
+      if (state.variables.length >= 3) return;
+      const idx = state.variables.length;
+      state.variables.push({ id: `var-${Date.now()}`, name: `x${idx + 1}`, objective: 0 });
+      state.constraints.forEach(c => c.coeffs.push(0));
+      renderVariables();
+      renderConstraints();
+      updateModelText();
+    });
+
+    addConstraintBtn.addEventListener('click', () => {
+      const coeffs = state.variables.map(() => 0);
+      state.constraints.push({ id: `con-${Date.now()}`, coeffs, operator: '<=', rhs: 0 });
+      renderConstraints();
+      updateModelText();
+    });
+
+    variableList.addEventListener('input', handleVariableChange);
+    variableList.addEventListener('click', event => {
+      if (event.target.dataset && event.target.dataset.action === 'remove') {
+        removeVariable(Number(event.target.dataset.index));
+      }
+    });
+    constraintList.addEventListener('input', handleConstraintInput);
+    constraintList.addEventListener('change', handleConstraintInput);
+    constraintList.addEventListener('click', event => {
+      if (event.target.dataset && event.target.dataset.action === 'remove-constraint') {
+        const index = Number(event.target.dataset.index);
+        state.constraints.splice(index, 1);
+        renderConstraints();
+        updateModelText();
+      }
+    });
+
+    loadExampleBtn.addEventListener('click', () => {
+      state = cloneState(exampleState);
+      ensureObjectiveToggle();
+      renderVariables();
+      renderConstraints();
+      updateModelText();
+    });
+
+    solveBtn.addEventListener('click', () => {
+      try {
+        const lp = parseLP(inputArea.value);
+        errorBox.textContent = '';
+        runVisualization(lp);
+      } catch (err) {
+        errorBox.textContent = err.message;
+      }
+    });
+
+    function resetViewers() {
+      const ctx1 = simplexCanvas.getContext('2d');
+      const ctx2 = interiorCanvas.getContext('2d');
+      ctx1.clearRect(0, 0, simplexCanvas.width, simplexCanvas.height);
+      ctx2.clearRect(0, 0, interiorCanvas.width, interiorCanvas.height);
+      simplexStepsEl.innerHTML = '';
+      interiorStepsEl.innerHTML = '';
+    }
+
+    function parseLP(raw) {
+      const lines = raw.split(/\n+/).map(line => line.trim()).filter(Boolean);
+      if (!lines.length) {
+        throw new Error('请输入完整的线性规划。');
+      }
+      const first = lines[0].toLowerCase();
+      if (!first.startsWith('maximize') && !first.startsWith('minimize')) {
+        throw new Error('首行需声明 maximize 或 minimize。');
+      }
+      const sense = first.includes('minimize') ? 'min' : 'max';
+      const objectiveExpr = lines[0].split(':')[1] ?? lines[0].replace(/maximize|minimize/ig, '');
+      const varsOrder = [];
+      const { coeffs: objCoeffs, constant: objConstant } = parseExpression(objectiveExpr, varsOrder);
+
+      let readingConstraints = false;
+      const constraintsRaw = [];
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+        if (/^subject to:?$/i.test(line)) {
+          readingConstraints = true;
+          continue;
+        }
+        if (!readingConstraints) {
+          throw new Error('请使用 "subject to:" 开始约束部分。');
+        }
+        const match = line.match(/(.+?)(<=|>=|=)(.+)/);
+        if (!match) {
+          throw new Error(`无法解析约束：${line}`);
+        }
+        let [, leftExpr, operator, rightExpr] = match;
+        const { coeffs, constant } = parseExpression(leftExpr, varsOrder);
+        const rhs = parseFloat(rightExpr) - constant;
+        if (!Number.isFinite(rhs)) {
+          throw new Error(`约束右端必须为数值：${line}`);
+        }
+        constraintsRaw.push({ coeffs, operator, rhs });
+      }
+      const uniqueVars = Array.from(new Set(varsOrder));
+      if (uniqueVars.length === 0) {
+        throw new Error('未检测到变量。');
+      }
+      if (uniqueVars.length > 3) {
+        throw new Error('当前仅支持至多三个变量。');
+      }
+      const orderedVars = uniqueVars;
+      const objective = orderedVars.map(name => objCoeffs[name] || 0);
+      const constraints = constraintsRaw.map(c => {
+        const coeffArr = orderedVars.map(name => c.coeffs[name] || 0);
+        return { coeffs: coeffArr, operator: c.operator, rhs: c.rhs };
+      });
+      orderedVars.forEach((name, idx) => {
+        const hasNonneg = constraints.some(c => {
+          if (Math.abs(c.rhs) > EPS) return false;
+          const coeffs = c.coeffs;
+          return coeffs.every((coef, i) => (i === idx ? Math.abs(coef + 1) < EPS : Math.abs(coef) < EPS));
+        });
+        if (!hasNonneg) {
+          const coeffs = orderedVars.map((_, j) => (j === idx ? -1 : 0));
+          constraints.push({ coeffs, operator: '<=', rhs: 0 });
+        }
+      });
+      return { sense, variables: orderedVars, objective, constraints, constant: objConstant };
+    }
+
+    function parseExpression(expr, varsOrder) {
+      const clean = expr.replace(/-/g, '+-');
+      const parts = clean.split('+').map(s => s.trim()).filter(Boolean);
+      const coeffs = {};
+      let constant = 0;
+      for (const part of parts) {
+        const match = part.match(/^([+-]?\d*\.?\d+)?([a-zA-Z]\w*)?$/);
+        if (!match) {
+          throw new Error(`无法解析线性表达式：${part}`);
+        }
+        let [, coefStr, variable] = match;
+        if (!variable) {
+          let value = parseFloat(coefStr);
+          if (Number.isNaN(value)) {
+            if (coefStr === '-') value = -1;
+            else if (coefStr === '+') value = 1;
+            else value = 0;
+          }
+          constant += value;
+          continue;
+        }
+        let coef = parseFloat(coefStr);
+        if (Number.isNaN(coef)) {
+          if (coefStr === '-' || coefStr === '+') {
+            coef = coefStr === '-' ? -1 : 1;
+          } else if (!coefStr) {
+            coef = 1;
+          }
+        }
+        coeffs[variable] = (coeffs[variable] || 0) + (Number.isFinite(coef) ? coef : 1);
+        varsOrder.push(variable);
+      }
+      return { coeffs, constant };
+    }
+
+    function runVisualization(lp) {
+      resetViewers();
+      const normalized = normalizeLP(lp);
+      const simplexResult = runSimplex(normalized);
+      const interiorResult = runInterior(normalized, simplexResult.optimalPoint);
+      renderSteps(simplexStepsEl, simplexResult.steps);
+      renderSteps(interiorStepsEl, interiorResult.steps);
+      const dims = normalized.variables.length;
+      if (dims === 3) {
+        twoDCard.style.display = 'none';
+        threeCard.style.display = 'flex';
+      } else {
+        twoDCard.style.display = 'flex';
+        threeCard.style.display = 'none';
+      }
+      if (dims === 2) {
+        draw2D(simplexCanvas, normalized, simplexResult.path, simplexResult.optimalPoint, 'simplex');
+        draw2D(interiorCanvas, normalized, interiorResult.path, simplexResult.optimalPoint, 'interior');
+      } else if (dims === 3) {
+        draw3D(normalized, simplexResult.path, interiorResult.path, simplexResult.optimalPoint);
+      }
+    }
+
+    function normalizeLP(lp) {
+      const { sense, variables, objective, constraints } = lp;
+      const obj = [...objective];
+      if (sense === 'min') {
+        for (let i = 0; i < obj.length; i++) obj[i] *= -1;
+      }
+      const normalizedConstraints = [];
+      constraints.forEach(constraint => {
+        const coeffs = [...constraint.coeffs];
+        let rhs = constraint.rhs;
+        let operator = constraint.operator;
+        if (operator === '>=') {
+          for (let i = 0; i < coeffs.length; i++) coeffs[i] *= -1;
+          rhs *= -1;
+          operator = '<=';
+        } else if (operator === '=') {
+          normalizedConstraints.push({ coeffs: coeffs.map(c => -c), rhs: -rhs });
+          operator = '<=';
+        }
+        normalizedConstraints.push({ coeffs, rhs });
+      });
+      const deduped = normalizedConstraints.filter(c => Number.isFinite(c.rhs));
+      return { sense: 'max', variables, objective: obj, constraints: deduped };
+    }
+
+    function runSimplex(lp) {
+      const m = lp.constraints.length;
+      const n = lp.objective.length;
+      const A = lp.constraints.map(c => [...c.coeffs]);
+      const b = lp.constraints.map(c => c.rhs);
+      const c = [...lp.objective];
+      for (let i = 0; i < b.length; i++) {
+        if (b[i] < 0) {
+          for (let j = 0; j < n; j++) A[i][j] *= -1;
+          b[i] *= -1;
+        }
+      }
+      const width = n + m + 1;
+      const height = m + 1;
+      const tableau = Array.from({ length: height }, () => Array(width).fill(0));
+      for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+          tableau[i][j] = A[i][j];
+        }
+        tableau[i][n + i] = 1;
+        tableau[i][width - 1] = b[i];
+      }
+      for (let j = 0; j < n; j++) {
+        tableau[m][j] = -c[j];
+      }
+      const basis = Array.from({ length: m }, (_, i) => n + i);
+      const steps = [];
+      const path = [];
+      function currentSolution() {
+        const x = Array(n).fill(0);
+        for (let i = 0; i < m; i++) {
+          const col = basis[i];
+          if (col < n) {
+            x[col] = tableau[i][width - 1];
+          }
+        }
+        return x;
+      }
+      steps.push('初始化单纯形表，加入松弛变量形成基本可行解。');
+      path.push(currentSolution());
+      for (let iter = 0; iter < 40; iter++) {
+        let entering = -1;
+        let minValue = -EPS;
+        for (let j = 0; j < width - 1; j++) {
+          if (tableau[m][j] < minValue) {
+            minValue = tableau[m][j];
+            entering = j;
+          }
+        }
+        if (entering === -1) {
+          steps.push('所有检验数非负，达到最优解。');
+          break;
+        }
+        let leaving = -1;
+        let bestRatio = Infinity;
+        for (let i = 0; i < m; i++) {
+          const coeff = tableau[i][entering];
+          if (coeff > EPS) {
+            const ratio = tableau[i][width - 1] / coeff;
+            if (ratio < bestRatio - EPS) {
+              bestRatio = ratio;
+              leaving = i;
+            }
+          }
+        }
+        if (leaving === -1) {
+          steps.push('目标函数无界，路径终止。');
+          break;
+        }
+        pivot(tableau, leaving, entering);
+        basis[leaving] = entering;
+        steps.push(`第 ${iter + 1} 次迭代：引入变量 x${entering + 1}，离开变量成为新的基变量。`);
+        path.push(currentSolution());
+      }
+      const optimalPoint = currentSolution();
+      return { steps, path, optimalPoint };
+    }
+
+    function pivot(tableau, pivotRow, pivotCol) {
+      const height = tableau.length;
+      const width = tableau[0].length;
+      const pivotValue = tableau[pivotRow][pivotCol];
+      for (let j = 0; j < width; j++) {
+        tableau[pivotRow][j] /= pivotValue;
+      }
+      for (let i = 0; i < height; i++) {
+        if (i === pivotRow) continue;
+        const factor = tableau[i][pivotCol];
+        if (Math.abs(factor) < EPS) continue;
+        for (let j = 0; j < width; j++) {
+          tableau[i][j] -= factor * tableau[pivotRow][j];
+        }
+      }
+    }
+
+    function runInterior(lp, target) {
+      const vertices = enumerateVertices(lp);
+      if (!vertices.length) {
+        return { path: [], steps: ['未找到可行域，无法执行内点法。'] };
+      }
+      let start = centroid(vertices);
+      start = projectInside(lp, start, vertices[0]);
+      const steps = [];
+      const path = [];
+      steps.push('选取可行域内部点作为初始解。');
+      path.push(start);
+      const goal = target && target.some(v => Number.isFinite(v)) ? target : centroid(vertices);
+      const iterations = 8;
+      for (let i = 1; i <= iterations; i++) {
+        const t = i / iterations;
+        const point = start.map((s, idx) => s + (goal[idx] - s) * easeInOutCubic(t));
+        path.push(point);
+        steps.push(`障碍函数下降步骤 ${i}：沿中心路径逼近最优解。`);
+      }
+      steps.push('满足最优性与可行性条件，算法结束。');
+      return { path, steps };
+    }
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function centroid(points) {
+      if (!points.length) return [];
+      const dims = points[0].length;
+      const sum = Array(dims).fill(0);
+      points.forEach(point => {
+        for (let i = 0; i < dims; i++) sum[i] += point[i];
+      });
+      return sum.map(v => v / points.length);
+    }
+
+    function projectInside(lp, point, fallback) {
+      const adjusted = [...point];
+      for (const constraint of lp.constraints) {
+        const value = dot(constraint.coeffs, adjusted);
+        if (value > constraint.rhs - 1e-3) {
+          const slack = value - constraint.rhs + 1e-2;
+          const normSq = dot(constraint.coeffs, constraint.coeffs);
+          if (normSq > EPS) {
+            for (let i = 0; i < adjusted.length; i++) {
+              adjusted[i] -= (slack / normSq) * constraint.coeffs[i];
+            }
+          }
+        }
+      }
+      if (!isFeasible(lp, adjusted)) {
+        return fallback;
+      }
+      return adjusted;
+    }
+
+    function dot(a, b) {
+      return a.reduce((sum, val, idx) => sum + val * (b[idx] || 0), 0);
+    }
+
+    function isFeasible(lp, point) {
+      return lp.constraints.every(c => dot(c.coeffs, point) <= c.rhs + 1e-5);
+    }
+
+    function enumerateVertices(lp) {
+      const dims = lp.objective.length;
+      if (!lp.constraints.length) return [];
+      const combinations = choose(lp.constraints.map((_, idx) => idx), dims);
+      const vertices = [];
+      for (const combo of combinations) {
+        const matrix = combo.map(idx => lp.constraints[idx].coeffs);
+        const rhs = combo.map(idx => lp.constraints[idx].rhs);
+        const solution = solveLinearSystem(matrix, rhs);
+        if (!solution) continue;
+        if (isFeasible(lp, solution)) {
+          vertices.push(solution);
+        }
+      }
+      if (vertices.length === 0) {
+        const origin = Array(dims).fill(0);
+        if (isFeasible(lp, origin)) vertices.push(origin);
+      }
+      return dedupePoints(vertices);
+    }
+
+    function choose(arr, k) {
+      const results = [];
+      const combo = [];
+      function backtrack(start, depth) {
+        if (depth === k) {
+          results.push([...combo]);
+          return;
+        }
+        for (let i = start; i < arr.length; i++) {
+          combo.push(arr[i]);
+          backtrack(i + 1, depth + 1);
+          combo.pop();
+        }
+      }
+      backtrack(0, 0);
+      return results;
+    }
+
+    function solveLinearSystem(matrix, rhs) {
+      const n = rhs.length;
+      if (!n) return null;
+      const A = matrix.map(row => [...row]);
+      const b = [...rhs];
+      for (let col = 0; col < n; col++) {
+        let pivotRow = col;
+        for (let row = col + 1; row < n; row++) {
+          if (Math.abs(A[row][col]) > Math.abs(A[pivotRow][col])) {
+            pivotRow = row;
+          }
+        }
+        if (Math.abs(A[pivotRow][col]) < EPS) {
+          return null;
+        }
+        [A[col], A[pivotRow]] = [A[pivotRow], A[col]];
+        [b[col], b[pivotRow]] = [b[pivotRow], b[col]];
+        const pivot = A[col][col];
+        for (let j = col; j < n; j++) {
+          A[col][j] /= pivot;
+        }
+        b[col] /= pivot;
+        for (let row = 0; row < n; row++) {
+          if (row === col) continue;
+          const factor = A[row][col];
+          for (let j = col; j < n; j++) {
+            A[row][j] -= factor * A[col][j];
+          }
+          b[row] -= factor * b[col];
+        }
+      }
+      return b.slice(0, matrix[0].length);
+    }
+
+    function dedupePoints(points) {
+      const unique = [];
+      points.forEach(p => {
+        if (!unique.some(q => p.every((val, idx) => Math.abs(val - q[idx]) < 1e-5))) {
+          unique.push(p);
+        }
+      });
+      return unique;
+    }
+
+    function renderSteps(container, steps) {
+      container.innerHTML = '';
+      steps.forEach(step => {
+        const li = document.createElement('li');
+        li.textContent = step;
+        container.appendChild(li);
+      });
+    }
+
+    function draw2D(canvas, lp, path, optimalPoint, mode) {
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+      const vertices = enumerateVertices(lp);
+      const bounds = computeBounds(vertices, path);
+      drawGrid(ctx, width, height, bounds);
+      drawFeasibleRegion(ctx, lp, bounds);
+      drawPath(ctx, path, bounds, mode === 'simplex' ? '#38bdf8' : '#fbbf24');
+      if (optimalPoint) {
+        drawPoint(ctx, optimalPoint, bounds, '#22c55e', 6);
+      }
+    }
+
+    function computeBounds(vertices, path) {
+      let minX = 0, maxX = 1, minY = 0, maxY = 1;
+      const points = [...vertices, ...(path || [])];
+      if (!points.length) return { minX, maxX, minY, maxY };
+      minX = Math.min(...points.map(p => p[0]));
+      maxX = Math.max(...points.map(p => p[0]));
+      minY = Math.min(...points.map(p => p[1]));
+      maxY = Math.max(...points.map(p => p[1]));
+      const padX = (maxX - minX || 1) * 0.2;
+      const padY = (maxY - minY || 1) * 0.2;
+      return { minX: minX - padX, maxX: maxX + padX, minY: minY - padY, maxY: maxY + padY };
+    }
+
+    function project(point, bounds, width, height) {
+      const x = ((point[0] - bounds.minX) / (bounds.maxX - bounds.minX)) * width;
+      const y = height - ((point[1] - bounds.minY) / (bounds.maxY - bounds.minY)) * height;
+      return [x, y];
+    }
+
+    function drawGrid(ctx, width, height, bounds) {
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, width, height);
+      ctx.strokeStyle = 'rgba(148,163,184,0.25)';
+      ctx.lineWidth = 1;
+      const steps = 8;
+      for (let i = 0; i <= steps; i++) {
+        const x = (width / steps) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+        const y = (height / steps) * i;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = 'rgba(96,165,250,0.6)';
+      ctx.beginPath();
+      const origin = project([0, 0], bounds, width, height);
+      ctx.moveTo(origin[0], 0);
+      ctx.lineTo(origin[0], height);
+      ctx.moveTo(0, origin[1]);
+      ctx.lineTo(width, origin[1]);
+      ctx.stroke();
+    }
+
+    function drawFeasibleRegion(ctx, lp, bounds) {
+      const polygon = clipToConstraints(lp);
+      if (!polygon.length) return;
+      ctx.fillStyle = 'rgba(129,140,248,0.28)';
+      ctx.beginPath();
+      polygon.forEach((point, idx) => {
+        const [x, y] = project(point, bounds, ctx.canvas.width, ctx.canvas.height);
+        if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawPath(ctx, path, bounds, color) {
+      if (!path || path.length < 2) return;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      path.forEach((point, idx) => {
+        const [x, y] = project(point, bounds, ctx.canvas.width, ctx.canvas.height);
+        if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      path.forEach(point => drawPoint(ctx, point, bounds, color, 4));
+    }
+
+    function drawPoint(ctx, point, bounds, color, radius) {
+      const [x, y] = project(point, bounds, ctx.canvas.width, ctx.canvas.height);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function clipToConstraints(lp) {
+      const initial = buildBox(0, 50);
+      return lp.constraints.reduce((polygon, constraint) => clipPolygon(polygon, constraint), initial);
+    }
+
+    function buildBox(min, max) {
+      return [
+        [min, min],
+        [max, min],
+        [max, max],
+        [min, max]
+      ];
+    }
+
+    function clipPolygon(polygon, constraint) {
+      if (!polygon.length) return [];
+      const result = [];
+      for (let i = 0; i < polygon.length; i++) {
+        const current = polygon[i];
+        const next = polygon[(i + 1) % polygon.length];
+        const insideCurrent = constraint.coeffs[0] * current[0] + constraint.coeffs[1] * current[1] <= constraint.rhs + 1e-5;
+        const insideNext = constraint.coeffs[0] * next[0] + constraint.coeffs[1] * next[1] <= constraint.rhs + 1e-5;
+        if (insideCurrent && insideNext) {
+          result.push(next);
+        } else if (insideCurrent && !insideNext) {
+          result.push(intersect(current, next, constraint));
+        } else if (!insideCurrent && insideNext) {
+          result.push(intersect(current, next, constraint));
+          result.push(next);
+        }
+      }
+      return result.filter(Boolean);
+    }
+
+    function intersect(p1, p2, constraint) {
+      const [x1, y1] = p1;
+      const [x2, y2] = p2;
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const numerator = constraint.rhs - constraint.coeffs[0] * x1 - constraint.coeffs[1] * y1;
+      const denominator = constraint.coeffs[0] * dx + constraint.coeffs[1] * dy;
+      if (Math.abs(denominator) < EPS) return null;
+      const t = numerator / denominator;
+      return [x1 + t * dx, y1 + t * dy];
+    }
+
+    let threeRenderer = null;
+    let threeScene = null;
+    let threeCamera = null;
+    let threeControls = null;
+    let threeObjects = [];
+    let threeAnimating = false;
+
+    function draw3D(lp, simplexPath, interiorPath, optimalPoint) {
+      if (!threeRenderer) {
+        threeRenderer = new THREE.WebGLRenderer({ antialias: true });
+        threeRenderer.setPixelRatio(window.devicePixelRatio);
+        threeContainer.appendChild(threeRenderer.domElement);
+        threeScene = new THREE.Scene();
+        threeScene.background = new THREE.Color(0x020617);
+        threeCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+        threeCamera.position.set(40, 30, 32);
+        threeControls = new OrbitControls(threeCamera, threeRenderer.domElement);
+        threeControls.enableDamping = true;
+        window.addEventListener('resize', resizeThree, { passive: true });
+      }
+      threeObjects.forEach(obj => threeScene.remove(obj));
+      threeObjects = [];
+
+      const vertices = enumerateVertices(lp).map(v => new THREE.Vector3(v[0], v[1], v[2] || 0));
+      if (vertices.length >= 4) {
+        const geometry = new ConvexGeometry(vertices);
+        const material = new THREE.MeshStandardMaterial({ color: 0x818cf8, opacity: 0.35, transparent: true, side: THREE.DoubleSide });
+        const mesh = new THREE.Mesh(geometry, material);
+        threeScene.add(mesh);
+        threeObjects.push(mesh);
+      }
+      const pointsMaterial = new THREE.PointsMaterial({ color: 0x38bdf8, size: 0.4 });
+      const pointsGeometry = new THREE.BufferGeometry().setFromPoints(vertices);
+      const points = new THREE.Points(pointsGeometry, pointsMaterial);
+      threeScene.add(points);
+      threeObjects.push(points);
+
+      const simplexLine = buildLine(simplexPath, 0x38bdf8);
+      if (simplexLine) {
+        threeScene.add(simplexLine);
+        threeObjects.push(simplexLine);
+      }
+      const interiorLine = buildLine(interiorPath, 0xfbbf24);
+      if (interiorLine) {
+        threeScene.add(interiorLine);
+        threeObjects.push(interiorLine);
+      }
+      if (optimalPoint) {
+        const sphere = new THREE.Mesh(
+          new THREE.SphereGeometry(0.6, 24, 24),
+          new THREE.MeshStandardMaterial({ color: 0x22c55e })
+        );
+        sphere.position.set(optimalPoint[0], optimalPoint[1], optimalPoint[2] || 0);
+        threeScene.add(sphere);
+        threeObjects.push(sphere);
+      }
+
+      const light1 = new THREE.DirectionalLight(0xffffff, 0.7);
+      light1.position.set(30, 50, 20);
+      const light2 = new THREE.AmbientLight(0x334155, 0.6);
+      threeScene.add(light1, light2);
+      threeObjects.push(light1, light2);
+
+      resizeThree();
+      if (!threeAnimating) {
+        threeAnimating = true;
+        animateThree();
+      }
+    }
+
+    function buildLine(path, color) {
+      if (!path || path.length < 2) return null;
+      const points = path.map(p => new THREE.Vector3(p[0], p[1], p[2] || 0));
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const material = new THREE.LineBasicMaterial({ color, linewidth: 3 });
+      return new THREE.Line(geometry, material);
+    }
+
+    function resizeThree() {
+      if (!threeRenderer || !threeCamera) return;
+      const { clientWidth, clientHeight } = threeContainer;
+      threeRenderer.setSize(clientWidth, clientHeight);
+      threeCamera.aspect = clientWidth / clientHeight;
+      threeCamera.updateProjectionMatrix();
+    }
+
+    function animateThree() {
+      if (!threeRenderer || !threeScene || !threeCamera) {
+        threeAnimating = false;
+        return;
+      }
+      requestAnimationFrame(animateThree);
+      if (threeControls) {
+        threeControls.update();
+      }
+      threeRenderer.render(threeScene, threeCamera);
+    }
+
+    function renderInitialState() {
+      ensureObjectiveToggle();
+      renderVariables();
+      renderConstraints();
+      updateModelText();
+    }
+
+    renderInitialState();
+  </script>
+</body>
+</html>
