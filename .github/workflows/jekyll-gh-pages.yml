@@ -4,7 +4,7 @@ name: Deploy Jekyll with GitHub Pages dependencies preinstalled
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ["codex/create-single-file-personal-homepage-cpzl2y", "codex/create-a-linear-programming-solver-tool"]
+    branches: ["codex/create-a-linear-programming-solver-tool"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
