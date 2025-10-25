@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>线性规划几何解法演示</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1b1e27;
+    }
+    header {
+      background: linear-gradient(120deg, #4f46e5, #9333ea);
+      color: white;
+      padding: 24px 40px;
+      box-shadow: 0 10px 25px rgba(79, 70, 229, 0.35);
+    }
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: 0.04em;
+    }
+    header p {
+      margin: 0;
+      opacity: 0.85;
+    }
+    main {
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      padding: 24px 32px 48px;
+    }
+    .panel {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+      padding: 24px;
+    }
+    .input-panel {
+      flex: 1;
+      min-width: 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    textarea {
+      width: 100%;
+      height: 360px;
+      resize: vertical;
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 15px;
+      line-height: 1.6;
+      background: #f0f2fb;
+      color: inherit;
+      box-shadow: inset 0 2px 8px rgba(99, 102, 241, 0.08);
+    }
+    button {
+      align-self: flex-start;
+      padding: 12px 26px;
+      background: linear-gradient(120deg, #4f46e5, #6366f1);
+      border: none;
+      color: white;
+      font-size: 15px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 12px 25px rgba(79, 70, 229, 0.3);
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(79, 70, 229, 0.4);
+    }
+    .visual-panel {
+      flex: 2;
+      min-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .canvas-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    canvas {
+      width: 100%;
+      height: 320px;
+      border-radius: 16px;
+      background: #0f172a;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .steps-section {
+      background: #f8f9ff;
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.12);
+    }
+    .steps-section h3 {
+      margin-top: 0;
+      font-size: 17px;
+      color: #4338ca;
+    }
+    ul {
+      padding-left: 18px;
+      margin: 0;
+      list-style: none;
+    }
+    ul li::before {
+      content: "•";
+      color: #4f46e5;
+      display: inline-block;
+      width: 1em;
+      margin-left: -1em;
+    }
+    footer {
+      text-align: center;
+      padding-bottom: 32px;
+      color: rgba(15, 23, 42, 0.55);
+      font-size: 14px;
+    }
+    @media (max-width: 960px) {
+      main {
+        flex-direction: column;
+      }
+      .canvas-wrapper {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>线性规划几何求解演示器</h1>
+    <p>输入二维线性规划问题，观察单纯形法与内点法的几何迭代过程。</p>
+  </header>
+  <main>
+    <section class="panel input-panel">
+      <div>
+        <h2>输入线性规划</h2>
+        <p>目前支持二维变量 (x, y)。保持约束为 ≤ 或 ≥ 形式。</p>
+      </div>
+      <textarea id="lp-input">
+maximize: 3x + 2y
+subject to:
+  2x + y <= 18
+  2x + 3y <= 42
+  3x + y <= 24
+  x >= 0
+  y >= 0
+      </textarea>
+      <button id="solve-btn">运行求解</button>
+      <div id="error" style="color:#dc2626; min-height:20px;"></div>
+    </section>
+    <section class="panel visual-panel">
+      <div class="canvas-wrapper">
+        <div>
+          <h3>单纯形法路径</h3>
+          <canvas id="simplex-canvas" width="480" height="320"></canvas>
+        </div>
+        <div>
+          <h3>内点法路径</h3>
+          <canvas id="interior-canvas" width="480" height="320"></canvas>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="steps-section">
+          <h3>单纯形法步骤</h3>
+          <ul id="simplex-steps"></ul>
+        </div>
+        <div class="steps-section">
+          <h3>内点法步骤</h3>
+          <ul id="interior-steps"></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    © 2024 线性规划可视化工具
+  </footer>
+  <script>
+    const solveBtn = document.getElementById('solve-btn');
+    const inputArea = document.getElementById('lp-input');
+    const errorBox = document.getElementById('error');
+    const simplexCanvas = document.getElementById('simplex-canvas');
+    const interiorCanvas = document.getElementById('interior-canvas');
+    const simplexStepsEl = document.getElementById('simplex-steps');
+    const interiorStepsEl = document.getElementById('interior-steps');
+
+    const EPS = 1e-6;
+
+    function parseLP(raw) {
+      const lines = raw.split(/\n+/).map(line => line.trim()).filter(Boolean);
+      if (lines.length === 0) {
+        throw new Error('请输入线性规划。');
+      }
+      const first = lines[0].toLowerCase();
+      if (!first.startsWith('maximize') && !first.startsWith('minimize')) {
+        throw new Error('请在首行声明 maximize 或 minimize。');
+      }
+      const objectiveType = first.includes('minimize') ? 'min' : 'max';
+      const objectiveExpr = first.split(':')[1] || first.replace(/maximize|minimize/ig, '');
+      const { coeffs: objCoeffs, variables } = parseExpression(objectiveExpr);
+      if (variables.size > 2) {
+        throw new Error('当前仅支持最多两个变量。');
+      }
+      const orderedVars = Array.from(variables);
+      while (orderedVars.length < 2) {
+        orderedVars.push(['x', 'y'][orderedVars.length] || `x${orderedVars.length+1}`);
+      }
+      const constraints = [];
+      let constraintsStarted = false;
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+        if (/^subject to:?$/i.test(line)) {
+          constraintsStarted = true;
+          continue;
+        }
+        if (!constraintsStarted) {
+          throw new Error('请使用 "subject to:" 开始约束部分。');
+        }
+        const constraintMatch = line.match(/(.+?)(<=|>=|=)(.+)/);
+        if (!constraintMatch) {
+          throw new Error(`无法解析约束：${line}`);
+        }
+        let [, leftExpr, symbol, rightExpr] = constraintMatch;
+        rightExpr = rightExpr.trim();
+        const rhs = parseFloat(rightExpr);
+        if (Number.isNaN(rhs)) {
+          throw new Error(`约束右端必须为数字：${line}`);
+        }
+        const { coeffs } = parseExpression(leftExpr, orderedVars);
+        let a = coeffs[0] || 0;
+        let b = coeffs[1] || 0;
+        let c = rhs;
+        if (symbol === '>=') {
+          a *= -1;
+          b *= -1;
+          c *= -1;
+          symbol = '<=';
+        } else if (symbol === '=') {
+          constraints.push({ a: -a, b: -b, c: -c, type: '<=' });
+          symbol = '<=';
+        }
+        constraints.push({ a, b, c, type: symbol });
+      }
+      if (!constraints.some(con => Math.abs(con.a + 1) < EPS && Math.abs(con.b) < EPS && Math.abs(con.c) < EPS)) {
+        constraints.push({ a: -1, b: 0, c: 0, type: '<=' });
+      }
+      if (!constraints.some(con => Math.abs(con.b + 1) < EPS && Math.abs(con.a) < EPS && Math.abs(con.c) < EPS)) {
+        constraints.push({ a: 0, b: -1, c: 0, type: '<=' });
+      }
+      const sign = objectiveType === 'min' ? -1 : 1;
+      const objective = [sign * (objCoeffs[0] || 0), sign * (objCoeffs[1] || 0)];
+      return { objectiveType, objective, constraints, variables: orderedVars };
+    }
+
+    function parseExpression(expr, variables) {
+      const cleaned = expr.replace(/-/g, '+-');
+      const parts = cleaned.split('+').map(s => s.replace(/\s+/g, '')).filter(Boolean);
+      const coeffs = {};
+      const varSet = variables ? new Set(variables) : new Set();
+      for (const part of parts) {
+        const match = part.match(/^(-?\d*\.?\d*)([a-zA-Z]\w*)?$/);
+        if (!match) {
+          throw new Error(`无法解析线性表达式：${part}`);
+        }
+        let [, coefStr, variable] = match;
+        let coef = parseFloat(coefStr);
+        if (Number.isNaN(coef)) {
+          if (coefStr === '-' || coefStr === '+') {
+            coef = coefStr === '-' ? -1 : 1;
+          } else {
+            coef = coefStr.trim() === '' ? 1 : parseFloat(coefStr);
+            if (Number.isNaN(coef)) {
+              coef = 1;
+            }
+          }
+        }
+        if (!variable) {
+          throw new Error('当前仅支持无常数项的表达式。');
+        }
+        varSet.add(variable);
+        coeffs[variable] = (coeffs[variable] || 0) + coef;
+      }
+      const orderedVars = Array.from(varSet);
+      return { coeffs: orderedVars.map(v => coeffs[v] || 0), variables: varSet };
+    }
+
+    function computeBoundingBox(constraints) {
+      let maxVal = 10;
+      const intercepts = [];
+      constraints.forEach(({ a, b, c }) => {
+        if (Math.abs(a) > EPS && c / a > 0) intercepts.push(Math.abs(c / a));
+        if (Math.abs(b) > EPS && c / b > 0) intercepts.push(Math.abs(c / b));
+        if (Math.abs(a) > EPS && Math.abs(b) > EPS) {
+          const intercept = Math.abs(c / (a + b));
+          if (intercept > 0) intercepts.push(intercept);
+        }
+      });
+      if (intercepts.length) {
+        maxVal = Math.max(...intercepts) * 1.4;
+      }
+      return Math.max(maxVal, 5);
+    }
+
+    function clipPolygon(polygon, constraint) {
+      const result = [];
+      const { a, b, c } = constraint;
+      for (let i = 0; i < polygon.length; i++) {
+        const current = polygon[i];
+        const next = polygon[(i + 1) % polygon.length];
+        const insideCurrent = a * current.x + b * current.y <= c + EPS;
+        const insideNext = a * next.x + b * next.y <= c + EPS;
+        if (insideCurrent && insideNext) {
+          result.push(next);
+        } else if (insideCurrent && !insideNext) {
+          const inter = lineIntersection(current, next, a, b, c);
+          if (inter) result.push(inter);
+        } else if (!insideCurrent && insideNext) {
+          const inter = lineIntersection(current, next, a, b, c);
+          if (inter) {
+            result.push(inter);
+            result.push(next);
+          }
+        }
+      }
+      return result;
+    }
+
+    function lineIntersection(p1, p2, a, b, c) {
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const denom = a * dx + b * dy;
+      if (Math.abs(denom) < EPS) return null;
+      const t = (c - a * p1.x - b * p1.y) / denom;
+      return { x: p1.x + t * dx, y: p1.y + t * dy };
+    }
+
+    function halfPlaneIntersection(constraints, bound) {
+      let polygon = [
+        { x: 0, y: 0 },
+        { x: bound, y: 0 },
+        { x: bound, y: bound },
+        { x: 0, y: bound }
+      ];
+      for (const constraint of constraints) {
+        polygon = clipPolygon(polygon, constraint);
+        if (!polygon.length) break;
+      }
+      return polygon;
+    }
+
+    function sortPolygon(vertices) {
+      const centroid = vertices.reduce((acc, v) => ({ x: acc.x + v.x, y: acc.y + v.y }), { x: 0, y: 0 });
+      centroid.x /= vertices.length;
+      centroid.y /= vertices.length;
+      return vertices.slice().sort((a, b) => Math.atan2(a.y - centroid.y, a.x - centroid.x) - Math.atan2(b.y - centroid.y, b.x - centroid.x));
+    }
+
+    function computeSimplexPath(vertices, objective) {
+      const ordered = sortPolygon(vertices);
+      const values = ordered.map(v => objective[0] * v.x + objective[1] * v.y);
+      let startIndex = 0;
+      let minValue = Infinity;
+      for (let i = 0; i < values.length; i++) {
+        if (values[i] < minValue) {
+          minValue = values[i];
+          startIndex = i;
+        }
+      }
+      const path = [ordered[startIndex]];
+      const steps = [`起点：顶点 (${ordered[startIndex].x.toFixed(2)}, ${ordered[startIndex].y.toFixed(2)})`];
+      let current = startIndex;
+      const visited = new Set([startIndex]);
+      for (let iter = 0; iter < ordered.length * 2; iter++) {
+        const prev = (current - 1 + ordered.length) % ordered.length;
+        const next = (current + 1) % ordered.length;
+        const candidates = [prev, next];
+        let best = current;
+        let bestValue = values[current];
+        for (const idx of candidates) {
+          if (values[idx] > bestValue + EPS) {
+            if (values[idx] > (values[best] || -Infinity)) {
+              best = idx;
+              bestValue = values[idx];
+            }
+          }
+        }
+        if (best === current) {
+          steps.push('最优解：到达目标函数在顶点处的最大值。');
+          break;
+        }
+        current = best;
+        path.push(ordered[current]);
+        steps.push(`转移到顶点 (${ordered[current].x.toFixed(2)}, ${ordered[current].y.toFixed(2)})，目标值=${bestValue.toFixed(2)}`);
+        if (visited.has(current)) {
+          steps.push('检测到循环，终止。');
+          break;
+        }
+        visited.add(current);
+      }
+      return { path, steps, ordered, values };
+    }
+
+    function computeInteriorPath(polygon, constraints, objective) {
+      if (!polygon.length) {
+        return { path: [], steps: ['无可行域，无法执行内点法。'] };
+      }
+      const centroid = polygon.reduce((acc, v) => ({ x: acc.x + v.x, y: acc.y + v.y }), { x: 0, y: 0 });
+      const start = { x: centroid.x / polygon.length, y: centroid.y / polygon.length };
+      let point = projectToInterior(start, constraints);
+      const path = [point];
+      const steps = [`选择初始内点 (${point.x.toFixed(2)}, ${point.y.toFixed(2)})`];
+      let mu = 0.5;
+      for (let iter = 1; iter <= 30; iter++) {
+        const grad = barrierGradient(point, constraints, objective, mu);
+        let alpha = 0.2;
+        let nextPoint = { x: point.x - alpha * grad.x, y: point.y - alpha * grad.y };
+        let guard = 0;
+        while (!isInterior(nextPoint, constraints) && guard < 12) {
+          alpha *= 0.5;
+          nextPoint = { x: point.x - alpha * grad.x, y: point.y - alpha * grad.y };
+          guard++;
+        }
+        if (!isInterior(nextPoint, constraints)) {
+          break;
+        }
+        point = nextPoint;
+        path.push(point);
+        steps.push(`第 ${iter} 步：沿中心路径推进至 (${point.x.toFixed(2)}, ${point.y.toFixed(2)})`);
+        mu *= 0.92;
+      }
+      steps.push('逼近边界附近的最优解。');
+      return { path, steps };
+    }
+
+    function projectToInterior(point, constraints) {
+      let candidate = { ...point };
+      for (let iter = 0; iter < 20; iter++) {
+        let adjusted = false;
+        for (const { a, b, c } of constraints) {
+          const slack = c - (a * candidate.x + b * candidate.y);
+          if (slack <= 0) {
+            candidate.x -= 0.1 * a;
+            candidate.y -= 0.1 * b;
+            adjusted = true;
+          }
+        }
+        if (!adjusted) break;
+      }
+      return candidate;
+    }
+
+    function isInterior(point, constraints) {
+      return constraints.every(({ a, b, c }) => a * point.x + b * point.y <= c - 1e-4);
+    }
+
+    function barrierGradient(point, constraints, objective, mu) {
+      const grad = { x: -objective[0], y: -objective[1] };
+      for (const { a, b, c } of constraints) {
+        const slack = c - (a * point.x + b * point.y);
+        if (slack <= 0) continue;
+        grad.x += mu * a / slack;
+        grad.y += mu * b / slack;
+      }
+      return grad;
+    }
+
+    function createRenderer(canvas, title) {
+      const ctx = canvas.getContext('2d');
+      const padding = 36;
+      return function render(state) {
+        const { polygon, constraints, bound, path, stepIndex, objective, values, highlight, isInteriorPath } = state;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (!polygon || !polygon.length) {
+          ctx.fillStyle = '#f87171';
+          ctx.font = '16px sans-serif';
+          ctx.fillText('无可行域', padding, padding);
+          return;
+        }
+        const scale = (canvas.width - padding * 2) / bound;
+        const scaleY = (canvas.height - padding * 2) / bound;
+        function toCanvas(p) {
+          return {
+            x: padding + p.x * scale,
+            y: canvas.height - padding - p.y * scaleY
+          };
+        }
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 0; i <= 5; i++) {
+          const val = (bound / 5) * i;
+          const pos = toCanvas({ x: val, y: 0 });
+          ctx.moveTo(pos.x, canvas.height - padding);
+          ctx.lineTo(pos.x, padding);
+        }
+        for (let i = 0; i <= 5; i++) {
+          const val = (bound / 5) * i;
+          const pos = toCanvas({ x: 0, y: val });
+          ctx.moveTo(padding, pos.y);
+          ctx.lineTo(canvas.width - padding, pos.y);
+        }
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(99, 102, 241, 0.18)';
+        ctx.beginPath();
+        polygon.forEach((v, idx) => {
+          const p = toCanvas(v);
+          if (idx === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        });
+        ctx.closePath();
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(129, 140, 248, 0.8)';
+        ctx.stroke();
+        if (constraints) {
+          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = 'rgba(148, 163, 184, 0.7)';
+          constraints.forEach(({ a, b, c }) => {
+            const points = [];
+            if (Math.abs(b) > EPS) {
+              points.push({ x: 0, y: c / b });
+              points.push({ x: bound, y: (c - a * bound) / b });
+            } else if (Math.abs(a) > EPS) {
+              points.push({ x: c / a, y: 0 });
+              points.push({ x: c / a, y: bound });
+            }
+            const filtered = points.filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+            if (filtered.length === 2) {
+              ctx.beginPath();
+              const p1 = toCanvas(filtered[0]);
+              const p2 = toCanvas(filtered[1]);
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          });
+        }
+        if (path && path.length) {
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = isInteriorPath ? 'rgba(248, 113, 113, 0.85)' : 'rgba(52, 211, 153, 0.85)';
+          ctx.beginPath();
+          path.slice(0, stepIndex).forEach((point, index) => {
+            const cPoint = toCanvas(point);
+            if (index === 0) ctx.moveTo(cPoint.x, cPoint.y);
+            else ctx.lineTo(cPoint.x, cPoint.y);
+          });
+          ctx.stroke();
+          const drawLimit = Math.min(stepIndex, path.length);
+          for (let i = 0; i < drawLimit; i++) {
+            const p = toCanvas(path[i]);
+            ctx.fillStyle = isInteriorPath ? '#f87171' : '#34d399';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          if (highlight) {
+            const hp = toCanvas(highlight);
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.arc(hp.x, hp.y, 7, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.fillStyle = '#cbd5f5';
+        ctx.font = '13px sans-serif';
+        ctx.fillText('x', canvas.width - padding + 8, canvas.height - padding + 4);
+        ctx.fillText('y', padding - 16, padding - 10);
+        ctx.beginPath();
+        ctx.moveTo(padding, padding - 6);
+        ctx.lineTo(padding, canvas.height - padding + 6);
+        ctx.moveTo(padding - 6, canvas.height - padding);
+        ctx.lineTo(canvas.width - padding + 6, canvas.height - padding);
+        ctx.strokeStyle = 'rgba(203, 213, 225, 0.9)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      };
+    }
+
+    const renderSimplex = createRenderer(simplexCanvas, '单纯形法');
+    const renderInterior = createRenderer(interiorCanvas, '内点法');
+
+    let simplexAnimation = null;
+    let interiorAnimation = null;
+
+    function startSimplexAnimation(state) {
+      if (simplexAnimation) clearInterval(simplexAnimation);
+      let step = 1;
+      renderSimplex({ ...state, stepIndex: step });
+      simplexAnimation = setInterval(() => {
+        step++;
+        if (step > state.path.length) {
+          clearInterval(simplexAnimation);
+          renderSimplex({ ...state, stepIndex: state.path.length });
+        } else {
+          renderSimplex({ ...state, stepIndex: step });
+        }
+      }, 1100);
+    }
+
+    function startInteriorAnimation(state) {
+      if (interiorAnimation) clearInterval(interiorAnimation);
+      let step = 1;
+      renderInterior({ ...state, stepIndex: step, isInteriorPath: true });
+      interiorAnimation = setInterval(() => {
+        step++;
+        if (step > state.path.length) {
+          clearInterval(interiorAnimation);
+          renderInterior({ ...state, stepIndex: state.path.length, isInteriorPath: true });
+        } else {
+          renderInterior({ ...state, stepIndex: step, isInteriorPath: true });
+        }
+      }, 350);
+    }
+
+    function updateSteps(listEl, steps) {
+      listEl.innerHTML = '';
+      steps.forEach(step => {
+        const li = document.createElement('li');
+        li.textContent = step;
+        listEl.appendChild(li);
+      });
+    }
+
+    solveBtn.addEventListener('click', () => {
+      errorBox.textContent = '';
+      simplexStepsEl.innerHTML = '';
+      interiorStepsEl.innerHTML = '';
+      try {
+        const lp = parseLP(inputArea.value);
+        const bound = computeBoundingBox(lp.constraints);
+        const polygon = halfPlaneIntersection(lp.constraints, bound);
+        if (!polygon.length) {
+          throw new Error('约束无交集，可行域为空。');
+        }
+        const { path: simplexPath, steps: simplexSteps, ordered, values } = computeSimplexPath(polygon, lp.objective);
+        const optimumIndex = simplexPath.length ? simplexPath.length - 1 : 0;
+        const simplexState = {
+          polygon,
+          constraints: lp.constraints,
+          bound,
+          path: simplexPath,
+          stepIndex: simplexPath.length ? 1 : 0,
+          objective: lp.objective,
+          values,
+          highlight: simplexPath[optimumIndex]
+        };
+        startSimplexAnimation(simplexState);
+        updateSteps(simplexStepsEl, simplexSteps);
+
+        const interiorResult = computeInteriorPath(polygon, lp.constraints, lp.objective);
+        const interiorState = {
+          polygon,
+          constraints: lp.constraints,
+          bound,
+          path: interiorResult.path,
+          stepIndex: interiorResult.path.length ? 1 : 0,
+          objective: lp.objective,
+          highlight: simplexPath[simplexPath.length - 1]
+        };
+        startInteriorAnimation(interiorState);
+        updateSteps(interiorStepsEl, interiorResult.steps);
+      } catch (e) {
+        errorBox.textContent = e.message;
+        renderSimplex({ polygon: null });
+        renderInterior({ polygon: null });
+      }
+    });
+
+    solveBtn.click();
+  </script>
+</body>
+</html>
