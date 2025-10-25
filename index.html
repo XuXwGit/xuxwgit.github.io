@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>运筹优化 · 个人主页</title>
+  <meta name="description" content="运筹学与优化方向的个人主页，展示项目、研究笔记、博客与小工具。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            accent: {
+              DEFAULT: '#2563eb',
+              dark: '#60a5fa'
+            }
+          },
+          boxShadow: {
+            soft: '0 8px 24px rgba(15,23,42,0.08)'
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-s8g6pKVxTBqSxkbZVqhlV+3I8I4JVXuZWfLG3kNsYch0eYRqpK0p+ef+aj7P3xjF" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" integrity="sha512-IsiIQsBfTLKjbaTCIexp/D/TEh05iT6xwsZ2u7+Y8DCgGFIIokXwFJow+pOJkYtQEw1gL2xR0V9aDlaPiRl0sA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', 'Noto Sans SC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    canvas { max-width: 100%; }
+  </style>
+</head>
+<body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/90 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800">
+    <nav class="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
+      <div class="font-semibold tracking-tight text-lg">运筹优化主页</div>
+      <button id="nav-toggle" class="md:hidden p-2 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center justify-center" title="展开导航" aria-label="展开导航" aria-controls="mobile-nav" type="button" data-icon="menu"></button>
+      <div class="hidden md:flex items-center space-x-6 text-sm" id="desktop-nav">
+        <a href="#home" class="hover:text-accent transition-colors">主页</a>
+        <a href="#projects" class="hover:text-accent transition-colors">项目</a>
+        <a href="#notes" class="hover:text-accent transition-colors">研究笔记</a>
+        <a href="#source-analysis" class="hover:text-accent transition-colors">源码剖析</a>
+        <a href="#paper-digest" class="hover:text-accent transition-colors">论文解读</a>
+        <a href="#blog" class="hover:text-accent transition-colors">技术博客</a>
+        <a href="#tools" class="hover:text-accent transition-colors">小工具</a>
+        <a href="#contact" class="hover:text-accent transition-colors">联系</a>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button id="theme-toggle" type="button" title="切换主题" aria-label="切换主题" class="p-2 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center justify-center" data-icon="sun"></button>
+        <a id="github-link" href="#" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub" class="p-2 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center justify-center" data-icon="github"></a>
+      </div>
+    </nav>
+    <div id="mobile-nav" class="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/90 hidden">
+      <div class="max-w-5xl mx-auto px-4 py-4 grid gap-3 text-sm text-slate-700 dark:text-slate-200">
+        <a href="#home" class="hover:text-accent transition-colors">主页</a>
+        <a href="#projects" class="hover:text-accent transition-colors">项目</a>
+        <a href="#notes" class="hover:text-accent transition-colors">研究笔记</a>
+        <a href="#source-analysis" class="hover:text-accent transition-colors">源码剖析</a>
+        <a href="#paper-digest" class="hover:text-accent transition-colors">论文解读</a>
+        <a href="#blog" class="hover:text-accent transition-colors">技术博客</a>
+        <a href="#tools" class="hover:text-accent transition-colors">小工具</a>
+        <a href="#contact" class="hover:text-accent transition-colors">联系</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 pb-24 space-y-24">
+    <section id="home" class="pt-20">
+      <div class="flex flex-col gap-12 md:flex-row md:items-center">
+        <div class="md:flex-1 space-y-6">
+          <p class="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Operations Research · Optimization</p>
+          <h1 class="text-4xl md:text-5xl font-semibold leading-tight" id="hero-title"></h1>
+          <p class="text-lg text-slate-600 dark:text-slate-300" id="hero-description"></p>
+          <div class="flex flex-wrap gap-3">
+            <a href="#projects" class="inline-flex items-center px-5 py-2.5 rounded-full bg-accent text-white shadow-soft hover:shadow transition">查看项目</a>
+            <a href="#notes" class="inline-flex items-center px-5 py-2.5 rounded-full border border-accent text-accent hover:bg-accent/10 transition">研究笔记</a>
+            <a href="#tools" class="inline-flex items-center px-5 py-2.5 rounded-full border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">试用小工具</a>
+          </div>
+          <div class="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+            <div class="text-sm text-slate-500 dark:text-slate-400 mb-2">线性/整数规划示例</div>
+            <p class="text-lg">$$\min\; c^\top x \quad \text{s.t.}\; Ax \ge b,\; x \in \mathbb{Z}_{\ge 0}^n$$</p>
+          </div>
+        </div>
+        <div class="md:flex-1">
+          <pre class="rounded-2xl bg-slate-900 text-slate-100 p-6 overflow-x-auto shadow-soft"><code class="language-python">import numpy as np
+from scipy.optimize import linprog
+
+c = np.array([1, 2, 3])
+A = np.array([[1, 1, 0], [0, 1, 1]])
+b = np.array([4, 3])
+res = linprog(c, A_ub=A, b_ub=b, bounds=(0, None))
+print(res.x, res.fun)</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="space-y-8">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-3xl font-semibold">项目 Projects</h2>
+        <span class="text-sm text-slate-500 dark:text-slate-400">优化算法、图模型与可视化工具</span>
+      </div>
+      <div id="project-list" class="grid gap-6 sm:grid-cols-2"></div>
+    </section>
+
+    <section id="notes" class="space-y-8">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-3xl font-semibold">研究笔记 Research Notes</h2>
+        <span class="text-sm text-slate-500 dark:text-slate-400">推导记录、实验结论与实践指导</span>
+      </div>
+      <div id="notes-list" class="space-y-4"></div>
+    </section>
+
+    <section id="source-analysis" class="space-y-6">
+      <h2 class="text-3xl font-semibold">源码剖析 Source Dive</h2>
+      <p class="text-slate-600 dark:text-slate-300">精选开源项目源码解析，关注算法实现细节与工程折衷。当前规划中的主题包括图算法库性能对比、凸优化求解器模块化设计等。</p>
+      <p class="text-slate-500 dark:text-slate-400 text-sm">TODO: 结合仓库阅读笔记实时更新。</p>
+    </section>
+
+    <section id="paper-digest" class="space-y-6">
+      <h2 class="text-3xl font-semibold">论文解读 Paper Digest</h2>
+      <p class="text-slate-600 dark:text-slate-300">总结近期关注的运筹与机器学习交叉论文，从模型假设、求解策略到实验复现流程整理重点。</p>
+      <ul class="space-y-3 text-slate-500 dark:text-slate-400 text-sm">
+        <li>· 近似算法与在线优化中的竞争比分析</li>
+        <li>· 深度强化学习在供应链优化中的可迁移性研究</li>
+        <li>· 加速凸优化的预条件与自适应策略</li>
+      </ul>
+    </section>
+
+    <section id="blog" class="space-y-8">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-3xl font-semibold">技术博客 Blog</h2>
+        <span class="text-sm text-slate-500 dark:text-slate-400">记录实现细节、踩坑与复盘</span>
+      </div>
+      <div id="post-list" class="grid gap-6 md:grid-cols-2"></div>
+    </section>
+
+    <section id="tools" class="space-y-8">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-3xl font-semibold">小工具 Tools</h2>
+        <span class="text-sm text-slate-500 dark:text-slate-400">在线演示常见运筹算法</span>
+      </div>
+      <div class="space-y-10">
+        <div class="p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-2xl font-semibold">Dijkstra 最短路</h3>
+            <div class="flex gap-2">
+              <button id="dijkstra-demo" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-700 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition">填充示例</button>
+              <button id="dijkstra-run" class="px-3 py-1.5 rounded-full bg-accent text-white text-sm hover:bg-accent/90 transition">运行</button>
+            </div>
+          </div>
+          <p class="text-slate-600 dark:text-slate-300 text-sm">输入边列表 CSV：每行 <code>u,v,w</code>，表示从节点 <code>u</code> 到 <code>v</code> 的边权为 <code>w</code>。示例：<code>A,B,5</code>。</p>
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <label class="block text-sm font-medium text-slate-600 dark:text-slate-300" for="dijkstra-edges">边列表 CSV</label>
+              <textarea id="dijkstra-edges" class="w-full h-48 rounded-2xl border border-slate-300 dark:border-slate-700 bg-transparent p-4 focus:outline-none focus:ring-2 focus:ring-accent/60" placeholder="A,B,4\nB,C,1\nA,C,7"></textarea>
+              <div class="grid grid-cols-2 gap-4">
+                <label class="block text-sm font-medium text-slate-600 dark:text-slate-300">起点
+                  <input id="dijkstra-start" class="mt-1 w-full rounded-full border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-accent/60" placeholder="A" />
+                </label>
+                <label class="block text-sm font-medium text-slate-600 dark:text-slate-300">终点
+                  <input id="dijkstra-end" class="mt-1 w-full rounded-full border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-accent/60" placeholder="C" />
+                </label>
+              </div>
+              <div id="dijkstra-message" class="text-sm text-slate-500 dark:text-slate-400"></div>
+              <div id="dijkstra-result" class="text-base font-medium text-slate-700 dark:text-slate-200"></div>
+            </div>
+            <div class="space-y-3">
+              <canvas id="dijkstra-canvas" width="500" height="400" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"></canvas>
+              <p class="text-xs text-slate-500 dark:text-slate-400">提示：节点自动按圆形布局绘制，支持任意命名。若无路径，将以红色提示。</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-500">// TODO: Hungarian 指派、最大流、单纯形法交互式可视化</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="space-y-6">
+      <h2 class="text-3xl font-semibold">联系 Contact</h2>
+      <div class="space-y-3 text-slate-600 dark:text-slate-300">
+        <p><span class="font-medium">GitHub：</span><a id="contact-github" href="#" class="text-accent hover:underline" target="_blank" rel="noopener"></a></p>
+        <p><span class="font-medium">Email：</span><a id="contact-email" href="#" class="text-accent hover:underline"></a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 dark:border-slate-800 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+    <p id="footer-text"></p>
+    <p class="mt-2">构建：Tailwind CSS · KaTeX · highlight.js · Lucide</p>
+  </footer>
+
+  <!-- 可编辑数据：仅需调整下方 profile 与 data 对象 -->
+  <script>
+    const profile = {
+      name: 'AI学员',
+      title: '运筹优化算法研究人员',
+      tagline: '聚焦图算法、凸优化与智能调度',
+      github: 'https://github.com/your-id',
+      email: 'mailto:you@example.com'
+    };
+
+    const data = {
+      projects: [
+        {
+          title: 'SchedOpt 智能排程服务 v4',
+          desc: '保留最新版本4的混合调度器方案，结合强化学习与约束编程并支持云原生部署。',
+          tags: ['Version 4', 'Reinforcement Learning', 'Scheduling', 'Kubernetes'],
+          link: 'https://github.com/your-id/schedopt'
+        }
+      ],
+      notes: [
+        {
+          title: '拉格朗日松弛与对偶界限',
+          html: '<p>将复杂约束 <span class="katex">$Ax \le b$</span> 松弛，引入乘子 <span class="katex">$\lambda$</span> 得到拉格朗日函数 <span class="katex">$L(x, \lambda) = c^\top x + \lambda^\top (Ax - b)$</span>，对偶问题 <span class="katex">$\max_{\lambda \ge 0} \min_x L(x, \lambda)$</span> 可作为下界。</p>'
+        },
+        {
+          title: 'Projected Gradient 收敛步长选择',
+          html: '<p>若目标 <span class="katex">$f$</span> <span class="katex">$L$</span>-Lipschitz 光滑，采用 <span class="katex">$\eta \le 1/L$</span> 可确保 <span class="katex">$\mathcal{O}(1/k)$</span> 收敛；在约束集合上使用投影算子 <span class="katex">$\Pi_\mathcal{C}$</span>。</p>'
+        },
+        {
+          title: 'Benders 分解的收敛判据',
+          html: '<p>主问题生成切平面，当上下界差距 <span class="katex">$|UB-LB| \le \epsilon$</span> 时停止；可结合 Pareto-optimal cuts 提升效率。</p>'
+        }
+      ],
+      posts: [
+        {
+          title: 'OR-Tools VRP 自定义约束实践',
+          date: '2024-05-12',
+          summary: '如何在 OR-Tools 中为车辆路径问题加入软时间窗与负载均衡惩罚。',
+          link: 'https://your-blog.example.com/vrp-custom'
+        },
+        {
+          title: '凸优化求解器剖析：从 KKT 到实现',
+          date: '2024-03-28',
+          summary: '以开源求解器为例拆解内点法的数值线性代数核心模块。',
+          link: 'https://your-blog.example.com/solver-kkt'
+        },
+        {
+          title: '网络流算法的工程化实现',
+          date: '2024-01-07',
+          summary: '比较 Dinic 与 Push-Relabel 在大规模稀疏图中的表现与调优手段。',
+          link: ''
+        }
+      ]
+    };
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.275.0/umd/lucide.min.js" integrity="sha512-ihn5OHnM3qY62qf3GU3i3dLsNoiijO1XkXhQZKgLcHLThC3qHnE3AmW9J6EJ2/C4xQEZNjss73KpmK1gFxqJgQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-PwFIoS8m0ZbIadRjYvW1BPwHR11U14j4Zil6X5RsZXp38Cx0uKSpoZ0/dVH3KZRd1fdH0HEYmzp0p+MBZHIN2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-vZTG03m7yEjnWvZjYLygmMM8bWDrw/UTTYxAtF3apBFt6nwLwJwGQVqCjiR4RYB3" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" integrity="sha384-+VB0LkB2B2D72B7L93QP7jH2yE9UjfbR5Q0dAFGVikCAa4nlaRX1JQG91L/6+LxE" crossorigin="anonymous"></script>
+
+  <script>
+    // 工具函数：创建元素并批量赋值
+    function createElement(tag, className, text) {
+      const el = document.createElement(tag);
+      if (className) el.className = className;
+      if (text) el.textContent = text;
+      return el;
+    }
+
+    function injectIcon(element, name) {
+      if (!element) return;
+      element.innerHTML = `<i data-lucide="${name}" class="w-5 h-5"></i>`;
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    }
+
+    function setTheme(theme) {
+      const root = document.documentElement;
+      if (theme === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+      localStorage.setItem('theme', theme);
+      updateThemeIcon(theme);
+    }
+
+    function updateThemeIcon(theme) {
+      const btn = document.getElementById('theme-toggle');
+      injectIcon(btn, theme === 'dark' ? 'moon' : 'sun');
+    }
+
+    function initTheme() {
+      const stored = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(stored || (prefersDark ? 'dark' : 'light'));
+    }
+
+    function renderProfile() {
+      document.getElementById('hero-title').textContent = `${profile.name} · ${profile.title}`;
+      document.getElementById('hero-description').textContent = profile.tagline;
+      document.getElementById('github-link').href = profile.github;
+      document.getElementById('contact-github').textContent = profile.github;
+      document.getElementById('contact-github').href = profile.github;
+      document.getElementById('contact-email').textContent = profile.email.replace('mailto:', '');
+      document.getElementById('contact-email').href = profile.email;
+      document.getElementById('footer-text').textContent = `© ${new Date().getFullYear()} ${profile.name}. All rights reserved.`;
+      injectIcon(document.getElementById('github-link'), 'github');
+    }
+
+    function renderProjects() {
+      const container = document.getElementById('project-list');
+      container.innerHTML = '';
+      data.projects.forEach(project => {
+        const card = createElement('article', 'p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col gap-4');
+        const header = createElement('div', 'flex items-start justify-between gap-3');
+        const title = createElement('h3', 'text-xl font-semibold text-slate-900 dark:text-slate-100', project.title);
+        const link = createElement('a', 'text-accent text-sm hover:underline flex items-center gap-1', 'Repo');
+        link.href = project.link;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        header.appendChild(title);
+        header.appendChild(link);
+        const desc = createElement('p', 'text-sm text-slate-600 dark:text-slate-300', project.desc);
+        const tagWrap = createElement('div', 'flex flex-wrap gap-2');
+        project.tags.forEach(tag => {
+          const chip = createElement('span', 'px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-300', tag);
+          tagWrap.appendChild(chip);
+        });
+        card.append(header, desc, tagWrap);
+        container.appendChild(card);
+      });
+    }
+
+    function renderNotes() {
+      const container = document.getElementById('notes-list');
+      container.innerHTML = '';
+      data.notes.forEach((note, index) => {
+        const details = createElement('details', 'rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm');
+        if (index === 0) details.open = true;
+        const summary = createElement('summary', 'cursor-pointer select-none px-5 py-3 font-medium text-slate-800 dark:text-slate-200');
+        summary.textContent = note.title;
+        const content = createElement('div', 'px-5 pb-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed');
+        // 仅 notes.html 支持少量 HTML/KaTeX
+        content.innerHTML = note.html;
+        details.append(summary, content);
+        container.appendChild(details);
+      });
+    }
+
+    function renderPosts() {
+      const container = document.getElementById('post-list');
+      container.innerHTML = '';
+      data.posts.forEach(post => {
+        const card = createElement('article', 'p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col gap-4');
+        const header = createElement('div', 'flex items-center justify-between text-sm text-slate-500 dark:text-slate-400');
+        header.appendChild(createElement('span', 'font-medium text-slate-700 dark:text-slate-300', post.date));
+        if (post.link) {
+          const link = createElement('a', 'text-accent hover:underline', '阅读全文');
+          link.href = post.link;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          header.appendChild(link);
+        }
+        const title = createElement('h3', 'text-xl font-semibold text-slate-900 dark:text-slate-100', post.title);
+        const summary = createElement('p', 'text-sm text-slate-600 dark:text-slate-300', post.summary);
+        card.append(header, title, summary);
+        container.appendChild(card);
+      });
+    }
+
+    function parseCSVEdges(raw) {
+      const edges = [];
+      const nodes = new Set();
+      raw.split(/\n|\r/).forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+        const parts = trimmed.split(',').map(p => p.trim());
+        if (parts.length < 3) return;
+        const [u, v, wStr] = parts;
+        const weight = Number(wStr);
+        if (!u || !v || Number.isNaN(weight)) return;
+        edges.push({ u, v, w: weight });
+        nodes.add(u);
+        nodes.add(v);
+      });
+      return { edges, nodes: Array.from(nodes) };
+    }
+
+    function buildAdjacency(edges) {
+      const adj = new Map();
+      edges.forEach(({ u, v, w }) => {
+        if (!adj.has(u)) adj.set(u, []);
+        adj.get(u).push({ node: v, weight: w });
+      });
+      return adj;
+    }
+
+    function dijkstra(adj, nodes, start, end) {
+      if (!start || !end) throw new Error('请填写起点与终点。');
+      if (!nodes.includes(start) || !nodes.includes(end)) throw new Error('起点或终点不存在于图中。');
+      const dist = new Map(nodes.map(node => [node, Infinity]));
+      const prev = new Map();
+      const visited = new Set();
+      dist.set(start, 0);
+
+      while (visited.size < nodes.length) {
+        let current = null;
+        let minDist = Infinity;
+        dist.forEach((value, node) => {
+          if (!visited.has(node) && value < minDist) {
+            minDist = value;
+            current = node;
+          }
+        });
+        if (current === null || minDist === Infinity) break;
+        visited.add(current);
+        if (current === end) break;
+        const neighbors = adj.get(current) || [];
+        neighbors.forEach(({ node, weight }) => {
+          const alt = dist.get(current) + weight;
+          if (alt < dist.get(node)) {
+            dist.set(node, alt);
+            prev.set(node, current);
+          }
+        });
+      }
+
+      if (dist.get(end) === Infinity) {
+        throw new Error('未找到从起点到终点的路径。');
+      }
+
+      const path = [];
+      let node = end;
+      while (node) {
+        path.unshift(node);
+        node = prev.get(node);
+      }
+      return { distance: dist.get(end), path };
+    }
+
+    function drawGraph(canvas, nodes, edges, path) {
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+
+      if (nodes.length === 0) {
+        ctx.fillStyle = '#64748b';
+        ctx.font = '16px Inter';
+        ctx.fillText('请先输入图数据并运行算法。', 20, 40);
+        return;
+      }
+
+      const radius = Math.min(width, height) / 2 - 60;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const positions = new Map();
+      nodes.forEach((node, index) => {
+        const angle = (2 * Math.PI * index) / nodes.length - Math.PI / 2;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        positions.set(node, { x, y });
+      });
+
+      const pathEdges = new Set();
+      if (path && path.length > 1) {
+        for (let i = 0; i < path.length - 1; i++) {
+          pathEdges.add(`${path[i]}->${path[i + 1]}`);
+        }
+      }
+
+      // 绘制边
+      edges.forEach(({ u, v, w }) => {
+        const from = positions.get(u);
+        const to = positions.get(v);
+        if (!from || !to) return;
+        const isPath = pathEdges.has(`${u}->${v}`);
+        const color = isPath ? '#2563eb' : '#94a3b8';
+        const lineWidth = isPath ? 3 : 1.5;
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+
+        // 箭头
+        const angle = Math.atan2(to.y - from.y, to.x - from.x);
+        const arrowSize = 8;
+        ctx.beginPath();
+        ctx.moveTo(to.x, to.y);
+        ctx.lineTo(
+          to.x - arrowSize * Math.cos(angle - Math.PI / 6),
+          to.y - arrowSize * Math.sin(angle - Math.PI / 6)
+        );
+        ctx.lineTo(
+          to.x - arrowSize * Math.cos(angle + Math.PI / 6),
+          to.y - arrowSize * Math.sin(angle + Math.PI / 6)
+        );
+        ctx.closePath();
+        ctx.fill();
+
+        // 权重标签
+        const labelX = (from.x + to.x) / 2;
+        const labelY = (from.y + to.y) / 2;
+        ctx.fillStyle = isPath ? '#1d4ed8' : '#475569';
+        ctx.font = '12px Inter';
+        ctx.fillText(String(w), labelX + 5, labelY - 5);
+      });
+
+      // 绘制节点
+      nodes.forEach(node => {
+        const { x, y } = positions.get(node);
+        ctx.beginPath();
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 2;
+        ctx.arc(x, y, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '14px Inter';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(node, x, y);
+      });
+    }
+
+    function handleDijkstra() {
+      const raw = document.getElementById('dijkstra-edges').value;
+      const start = document.getElementById('dijkstra-start').value.trim();
+      const end = document.getElementById('dijkstra-end').value.trim();
+      const messageEl = document.getElementById('dijkstra-message');
+      const resultEl = document.getElementById('dijkstra-result');
+      const canvas = document.getElementById('dijkstra-canvas');
+
+      try {
+        const { edges, nodes } = parseCSVEdges(raw);
+        if (edges.length === 0) throw new Error('请至少输入一条有效边。');
+        const adj = buildAdjacency(edges);
+        const { distance, path } = dijkstra(adj, nodes, start, end);
+        messageEl.textContent = `节点数：${nodes.length}，边数：${edges.length}`;
+        resultEl.textContent = `最短路径：${path.join(' → ')}，总长度：${distance}`;
+        resultEl.classList.remove('text-rose-500');
+        drawGraph(canvas, nodes, edges, path);
+      } catch (error) {
+        messageEl.textContent = '';
+        resultEl.textContent = error.message;
+        resultEl.classList.add('text-rose-500');
+        drawGraph(canvas, [], [], []);
+      }
+    }
+
+    function fillDijkstraDemo() {
+      document.getElementById('dijkstra-edges').value = 'A,B,4\nA,C,2\nB,C,5\nB,D,10\nC,E,3\nE,D,4\nD,F,11\nE,F,2';
+      document.getElementById('dijkstra-start').value = 'A';
+      document.getElementById('dijkstra-end').value = 'F';
+      document.getElementById('dijkstra-message').textContent = '';
+      document.getElementById('dijkstra-result').textContent = '';
+      drawGraph(document.getElementById('dijkstra-canvas'), [], [], []);
+    }
+
+    function initDijkstra() {
+      document.getElementById('dijkstra-run').addEventListener('click', handleDijkstra);
+      document.getElementById('dijkstra-demo').addEventListener('click', fillDijkstraDemo);
+      drawGraph(document.getElementById('dijkstra-canvas'), [], [], []);
+    }
+
+    function initHighlight() {
+      document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightElement(block);
+      });
+    }
+
+    function initKaTeX() {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    function initThemeToggle() {
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        const isDark = document.documentElement.classList.contains('dark');
+        setTheme(isDark ? 'light' : 'dark');
+      });
+    }
+
+    function initMobileNav() {
+      const toggle = document.getElementById('nav-toggle');
+      const mobileNav = document.getElementById('mobile-nav');
+      if (!toggle || !mobileNav) return;
+
+      function updateIcon(isOpen) {
+        injectIcon(toggle, isOpen ? 'x' : 'menu');
+        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      }
+
+      updateIcon(false);
+
+      toggle.addEventListener('click', () => {
+        const willOpen = mobileNav.classList.contains('hidden');
+        mobileNav.classList.toggle('hidden', !willOpen);
+        updateIcon(willOpen);
+      });
+
+      mobileNav.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          mobileNav.classList.add('hidden');
+          updateIcon(false);
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      renderProfile();
+      renderProjects();
+      renderNotes();
+      renderPosts();
+      initDijkstra();
+      initHighlight();
+      initThemeToggle();
+      initMobileNav();
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+
+    window.addEventListener('load', () => {
+      initKaTeX();
+    });
+  </script>
+</body>
+</html>
